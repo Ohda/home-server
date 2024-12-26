@@ -1,0 +1,9 @@
+name: home-server
+
+services: 
+  vault-secrets:
+    image: hashicorp/vault:1.18
+    container_name: vault-secrets
+    restart: unless-stopped
+    ports:
+      - "8200:8200"
