@@ -6,4 +6,10 @@ services:
     container_name: vault-secrets
     restart: unless-stopped
     ports:
-      - "8200:8200"
+      - "${VAULT_PORT_HOST:-8200}:8200"
+    environment:
+      # Définir l'adresse d'écoute de Vault
+      VAULT_ADDR: http://0.0.0.0:8200
+      
+      # Définir le token racine principal à partir des variables d'environnement
+      VAULT_DEV_ROOT_TOKEN_ID: "${VAULT_ROOT_TOKEN:-root-token}"
