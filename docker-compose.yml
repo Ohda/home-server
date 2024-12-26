@@ -10,6 +10,7 @@ services:
     environment:
       # Définir l'adresse d'écoute de Vault
       VAULT_ADDR: http://0.0.0.0:8200
-      
       # Définir le token racine principal à partir des variables d'environnement
       VAULT_DEV_ROOT_TOKEN_ID: "${VAULT_ROOT_TOKEN:-root-token}"
+      VAULT_MODE: "production"
+      
