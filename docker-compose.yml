@@ -6,4 +6,13 @@ services:
     container_name: vault-secrets
     restart: unless-stopped
     ports:
-      - "8200:8200"
+      - "${VAULT_PORT_HOST:-8200}:8200"
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_API_ADDR=http://0.0.0.0:8200
+    command: "server"
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - "${VAULT_VOLUME_FILE-./data/vault/file}:/vault/file"
+      - "./vault-config.json:/vault/config/vault-config.json"
