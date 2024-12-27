@@ -6,6 +6,7 @@ A simple home server setup using Docker.
 
 - **HashiCorp Vault**: A tool for securely managing secrets and protecting sensitive data.
 - **Traefik**: A modern reverse proxy and load balancer for managing your web traffic.
+- **Langflow**: A low-code app builder for RAG and multi-agent AI applications. It’s Python-based and agnostic to any model, API, or database. 
 
 ## Prerequisites
 
@@ -76,6 +77,11 @@ A simple home server setup using Docker.
 8. **Access Vault from the Internet**
 
     Try connecting to your `VAULT_DNS` (e.g., `https://your-subdomain.duckdns.org`) from an external browser. It should be accessible over the internet using HTTPS.
+
+9. **Access LangFlow**
+
+    Open your browser and navigate to [http://localhost:7860](http://localhost:7860).
+
 
 ## Additional Recommendations
 
