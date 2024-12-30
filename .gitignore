@@ -1,2 +1,3 @@
 .env
 ./data/**
+acme.json
