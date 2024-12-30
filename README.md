@@ -1,98 +1,159 @@
 # Home Server
 
-A simple home server setup using Docker.
+Une configuration simple de serveur domestique utilisant Docker.
 
-## Components
+## Composants
 
-- **HashiCorp Vault**: A tool for securely managing secrets and protecting sensitive data.
-- **Traefik**: A modern reverse proxy and load balancer for managing your web traffic.
-- **Langflow**: A low-code app builder for RAG and multi-agent AI applications. It’s Python-based and agnostic to any model, API, or database. 
+- **HashiCorp Vault** : Un outil pour gérer sécuritairement les secrets et protéger les données sensibles.
+- **Traefik** : Un proxy inverse moderne et équilibreur de charge pour gérer votre trafic web.
+- **Langflow** : Un outil low-code pour créer des applications RAG et multi-agents IA. Basé sur Python, il est agnostique à tout modèle, API ou base de données.
 
-## Prerequisites
+## Prérequis
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Installation
 
-1. **Configure Port Forwarding on Your Router**
+### 1. Configurer le Redirection des Ports sur Votre Routeur
 
-   Access your home router's settings (commonly at `http://192.168.1.1`) and set up port forwarding:
+Accédez aux paramètres de votre routeur domestique (généralement accessible via `http://192.168.1.1`) et configurez les redirections de ports suivantes :
 
-   - Forward port **80** (HTTP) to your local server.
-   - Forward port **443** (HTTPS) to your local server.
+- Redirigez le port **80** (HTTP) vers votre serveur local.
+- Redirigez le port **443** (HTTPS) vers votre serveur local.
 
-2. **Set Up a Free DNS with DuckDNS**
+### 2. Configurer un DNS Gratuit avec DuckDNS
 
-   - Visit [DuckDNS](https://duckdns.org) and create a free DNS account.
-   - Associate your public IP address with your chosen DuckDNS subdomain.
+- Rendez-vous sur [DuckDNS](https://duckdns.org) et créez un compte gratuit.
+- Associez votre adresse IP publique à un sous-domaine DuckDNS de votre choix.
 
-3. **Clone the Repository and Prepare the Environment**
+### 3. Cloner le Dépôt et Préparer l'Environnement
+
+```bash
+git clone <REPO_URL>
+cd home-server
+touch acme.json
+chmod 600 acme.json
+cp .env.default .env
+```
+
+### 4. Configurer le Fichier `.env`
+
+Mettez à jour le fichier `.env` avec les valeurs de configuration nécessaires. Voici un tableau expliquant chaque variable :
+
+| Nom de la Variable       | Description                                                               | Exemple                        |
+|--------------------------|---------------------------------------------------------------------------|--------------------------------|
+| `HOME_SERVER_DATA_PATH`  | Chemin vers le répertoire contenant les données de Vault.                | `/path/to/data`                |
+| `DUCKDNS_EMAIL`          | Adresse email associée à votre compte DuckDNS.                        | `your-email@example.com`       |
+| `VAULT_DNS`              | Sous-domaine DuckDNS pour accéder à Vault.                             | `your-subdomain.duckdns.org`   |
+| `DUCKDNS_TOKEN`          | Jeton DuckDNS, obtenable depuis la page de votre compte DuckDNS.         | `abcdef1234567890abcdef123456` |
+
+**⚠ï Important :**
+- Sauvegardez régulièrement le répertoire spécifié dans `HOME_SERVER_DATA_PATH` pour éviter toute perte de données.
+- Stockez votre `DUCKDNS_TOKEN` en lieu sûr.
+
+### 5. Lancer les Services avec Docker Compose
+
+```bash
+docker compose up -d
+```
+
+### 6. Accéder au Tableau de Bord de Traefik
+
+Ouvrez votre navigateur et accédez à [http://localhost:8080](http://localhost:8080) pour afficher le tableau de bord de Traefik.
+
+### 7. Configurer HashiCorp Vault
+
+#### Accès Initial
+
+1. Ouvrez votre navigateur et accédez à [http://localhost:8200](http://localhost:8200).
+2. Lors du premier démarrage, générez une **Clé de Déverrouillage (Unseal Key)** et un **Jeton Root (Root Token)**.
+   - **Clé de Déverrouillage :** Utilisée pour déverrouiller Vault.
+   - **Jeton Root :** Accès administratif complet.
+
+**⚠ï Important :** Stockez ces informations en lieu sûr.
+
+#### Configuration Simple
+
+1. **Activer un moteur de secrets :**
 
     ```bash
-    git clone <REPO_URL>
-    cd home-server
-    touch acme.json
-    chmod 600 acme.json
-    cp .env.default .env
+    vault secrets enable -path=my kv
     ```
 
-4. **Configure the `.env` File**
+2. **Définir une politique :**
 
-    Update the `.env` file with the necessary configuration values. Below is a table outlining each variable, its description, and an example value:
+    Créez une politique appelée `my` :
 
-    | Variable Name          | Description                                                                 | Example                         |
-    |------------------------|-----------------------------------------------------------------------------|---------------------------------|
-    | `HOME_SERVER_DATA_PATH`| Path to the directory that will contain the Vault data.                      | `/path/to/data`                 |
-    | `DUCKDNS_EMAIL`        | Email address associated with your DuckDNS account.                         | `your-email@example.com`        |
-    | `VAULT_DNS`            | Your chosen DuckDNS subdomain for accessing Vault.                          | `your-subdomain.duckdns.org`    |
-    | `DUCKDNS_TOKEN`        | Your DuckDNS token, obtainable from your DuckDNS account page.               | `abcdef1234567890abcdef1234567890` |
-
-    **⚠️ Important:** 
-    - Ensure you regularly back up the directory specified in `HOME_SERVER_DATA_PATH` to prevent data loss.
-    - Store your `DUCKDNS_TOKEN` securely, as it provides access to your DuckDNS account.
-
-5. **Start the Services with Docker Compose**
-
-    ```bash
-    docker compose up -d
+    ```yaml
+    path "my/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "my/metadata/*" {
+      capabilities = ["list", "read"]
+    }
     ```
 
-6. **Access Traefik Dashboard**
+3. **Ajouter une méthode d'authentification utilisateur :**
 
-    Open your browser and navigate to [http://localhost:8080](http://localhost:8080) to access the Traefik dashboard.
+    - Activer le mécanisme d'authentification par mot de passe :
 
-7. **Access the Vault Web Interface**
+      ```bash
+      vault auth enable userpass
+      ```
 
-    Open your browser and navigate to [http://localhost:8200](http://localhost:8200).
+    - Ajouter un utilisateur avec la politique `my` :
 
-    - On your first startup, generate your **Unseal Key** and **Root Token** from the UI.
-    - **⚠️ Important:** Store these credentials securely, as they are critical for accessing and managing Vault.
+      ```bash
+      vault write auth/userpass/users/<USERNAME> password=<PASSWORD> policies=my
+      ```
 
-      - **Unseal Key:** Used to unseal Vault.
-      - **Root Token:** Grants full administrative access to Vault.
+4. **Configurer une authentification Google OIDC :**
 
-    - **Note:** Each time you restart Docker Compose, you will need to **unseal Vault** using the unseal key.
+    Suivez le tutoriel officiel [Google Workspace OAuth](https://developer.hashicorp.com/vault/tutorials/auth-methods/google-workspace-oauth).
 
-8. **Access Vault from the Internet**
+    Exemple de configuration :
 
-    Try connecting to your `VAULT_DNS` (e.g., `https://your-subdomain.duckdns.org`) from an external browser. It should be accessible over the internet using HTTPS.
+    ```yaml
+    vault write auth/oidc/config \
+      oidc_discovery_url="https://accounts.google.com" \
+      oidc_client_id="<OAUTH_CLIENT_ID>" \
+      oidc_client_secret="<OAUTH_CLIENT_SECRET>" \
+      default_role="gmail"
 
-9. **Access LangFlow**
+    vault write auth/oidc/role/gmail -<<EOF
+    {
+        "user_claim": "email",
+        "bound_claims": { "email": ["<YOUR_EMAIL_ADDRESS>"] },
+        "bound_audiences": "<OAUTH_CLIENT_ID>",
+        "oidc_scopes": "openid email profile",
+        "allowed_redirect_uris": "https://your-subdomain.duckdns.org/ui/vault/auth/oidc/oidc/callback",
+        "role_type": "oidc",
+        "policies": "my",
+        "ttl": "1h"
+    }
+    EOF
+    ```
 
-    Open your browser and navigate to [http://localhost:7860](http://localhost:7860).
+### 8. Accéder à Vault depuis Internet
 
+Essayez de vous connecter à votre `VAULT_DNS` (par ex. `https://your-subdomain.duckdns.org`) depuis un navigateur externe. Vault devrait être accessible en HTTPS.
 
-## Additional Recommendations
+### 9. Accéder à LangFlow
 
-- **Security:** Regularly update your Docker images and dependencies to patch vulnerabilities.
-- **Backups:** Implement a robust backup strategy for your Vault data and configuration files.
-- **Monitoring:** Set up monitoring and logging to keep track of your server’s performance and security.
+Ouvrez votre navigateur et accédez à [http://localhost:7860](http://localhost:7860).
 
-## Troubleshooting
+## Recommandations Supplémentaires
 
-- **Port Forwarding Issues:** Ensure that your router correctly forwards ports 80 and 443 to your server's local IP address.
-- **DNS Configuration:** Verify that your DuckDNS subdomain correctly points to your public IP address.
-- **Firewall Settings:** Ensure that your server’s firewall allows traffic on ports 80, 443, 8080, and 8200.
+- **Sécurité :** Mettez à jour régulièrement vos images Docker et dépendances pour corriger les vulnérabilités.
+- **Sauvegardes :** Implémentez une stratégie de sauvegarde robuste pour vos données Vault et fichiers de configuration.
+- **Surveillance :** Configurez une surveillance et des journaux pour suivre les performances et la sécurité de votre serveur.
 
-For further assistance, refer to the official documentation of [HashiCorp Vault](https://www.vaultproject.io/docs) and [Traefik](https://doc.traefik.io/traefik/).
+## Dépannage
+
+- **Problèmes de Redirection de Ports :** Vérifiez que votre routeur redirige correctement les ports 80 et 443 vers l'adresse IP locale de votre serveur.
+- **Configuration DNS :** Assurez-vous que votre sous-domaine DuckDNS pointe correctement vers votre adresse IP publique.
+- **Paramètres de Pare-feu :** Vérifiez que le pare-feu de votre serveur autorise le trafic sur les ports 80, 443, 8080 et 8200.
+
+Pour plus d'assistance, consultez la documentation officielle de [HashiCorp Vault](https://www.vaultproject.io/docs) et [Traefik](https://doc.traefik.io/traefik/).
+
