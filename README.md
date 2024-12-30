@@ -7,6 +7,7 @@ Une configuration simple de serveur domestique utilisant Docker.
 - **HashiCorp Vault** : Un outil pour gérer sécuritairement les secrets et protéger les données sensibles.
 - **Traefik** : Un proxy inverse moderne et équilibreur de charge pour gérer votre trafic web.
 - **Langflow** : Un outil low-code pour créer des applications RAG et multi-agents IA. Basé sur Python, il est agnostique à tout modèle, API ou base de données.
+- **weaviate**: The AI-native database
 
 ## Prérequis
 
